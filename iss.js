@@ -32,7 +32,7 @@ const fetchCoordsByIP = function(ip, callback) {
   })
 }
 
-//Going to use my original format of using a URL vairable to make it easier
+//Going to use my original format of using a URL vairable to make it easier except have it inside of the function and not in the index file
 const fetchISSFlyOverTimes = function(coords, callback) {
   const URL = `https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`;
   
@@ -40,20 +40,20 @@ const fetchISSFlyOverTimes = function(coords, callback) {
     if (error) {
       return callback(error, null);
     }
-    const parsedBody = JSON.parse(body);
-    // check if "success" is true or not
-    if (!parsedBody.success) {
-      const message = `Success status was ${parsedBody.success}. Server message says: ${parsedBody.message} when fetching for IP ${parsedBody.ip}`;
-      callback(Error(message), null);
-      return;
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching ISS pass times: ${body}`), null);
+      return; //copy paste from first find IP function with edited string
     }
-    const { latitude, longitude } = parsedBody
 
-    callback(null, {latitude, longitude})
+    const passes = JSON.parse(body).response; // parses all passes of the ISS and stores in variable "passes"
+
+    callback(null, passes)
   })
 };
 
 module.exports = { fetchISSFlyOverTimes };
+
+
 //  const request = require('request');
 
 //  const fetchMyIP = function(ipURL, callback) { 
