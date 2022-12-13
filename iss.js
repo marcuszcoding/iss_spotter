@@ -1,6 +1,6 @@
- const request = require('request');
+const request = require('request');
 
- const fetchMyIP = function(callback) {
+const fetchMyIP = function(callback) {
   request('https://api.ipify.org?format=json', (error, response, body) => {
     if (error) return callback(error, null);
 
@@ -26,11 +26,11 @@ const fetchCoordsByIP = function(ip, callback) {
       callback(Error(message), null);
       return;
     }
-    const { latitude, longitude } = parsedBody
+    const { latitude, longitude } = parsedBody;
 
-    callback(null, {latitude, longitude})
-  })
-}
+    callback(null, {latitude, longitude});
+  });
+};
 
 //Going to use my original format of using a URL vairable to make it easier except have it inside of the function and not in the index file
 const fetchISSFlyOverTimes = function(coords, callback) {
@@ -47,30 +47,38 @@ const fetchISSFlyOverTimes = function(coords, callback) {
 
     const passes = JSON.parse(body).response; // parses all passes of the ISS and stores in variable "passes"
 
-    callback(null, passes)
-  })
+    callback(null, passes);
+  });
 };
 
 const nextISSTimesForMyLocation = function(callback) {
-  fetchMyIP(() => {
-    fetchCoordsByIP(() => {
-      fetchISSFlyOverTimes((error) => {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+
+    fetchCoordsByIP(ip, (error, loc) => {
+
+      if (error) {
+        return callback(error, null);
+      }
+      fetchISSFlyOverTimes(loc, (error, passes) => {
         if (error) {
           return callback(error, null);
-        } 
+        }
         
-        callback(null, passes)
-      })
-    })
-  })
-}
+        callback(null, passes);
+      });
+    });
+  });
+};
 
-module.exports = { fetchISSFlyOverTimes };
+module.exports = { nextISSTimesForMyLocation };
 
 
 //  const request = require('request');
 
-//  const fetchMyIP = function(ipURL, callback) { 
+//  const fetchMyIP = function(ipURL, callback) {
 //   request(ipURL, (error, response, body) => {
 //     if (error) {
 //       console.log("There was an error getting the IP")
